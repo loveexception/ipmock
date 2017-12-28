@@ -31,6 +31,7 @@ import mappers.is.web.bmw.sql.TopicsMapper;
 import net.sf.cglib.core.CollectionUtils;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
@@ -67,13 +68,13 @@ import com.is.web.bmw.entity.sql.entityenum.SubtopicsStatus;
 import com.is.web.bmw.entity.sql.extend.LoginsExtend;
 import com.is.web.common.utils.Utils;
 
-public class SeleniumMyBmw {
+public class SeleniumMyBmw2 {
 	static Map<String,Integer> bag = new HashMap<String,Integer>();
 	private static String resource = "mybatis-config.xml";
 
 	// WebDriver driver;
 
-	static Logger logger = LogManager.getLogger(SeleniumMyBmw.class.getName());
+	static Logger logger = LogManager.getLogger(SeleniumMyBmw2.class.getName());
 	static ChromeDriverService server;
 	static List<ProxyResponse> responseList = null;
 
@@ -81,7 +82,7 @@ public class SeleniumMyBmw {
 
 	public static void main(String[] args) throws IOException, InterruptedException {
 
-		if (null == args) {
+		if (ArrayUtils.isEmpty(args) ) {
 			System.setProperty("webdriver.chrome.driver", Constant.DRIVERPATH);
 		} else {
 			System.setProperty("webdriver.chrome.driver", args[0]);
@@ -89,6 +90,7 @@ public class SeleniumMyBmw {
 		server = ChromeDriverService.createDefaultService();
 
 		while (true) {
+			
 			try{
 				// responseList =new ProxyUtils().getProxyList();
 			}catch (Exception e) {
@@ -97,8 +99,9 @@ public class SeleniumMyBmw {
 			InputStream inputStream = Resources.getResourceAsStream(resource);
 			SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
 			SqlSession session = sqlSessionFactory.openSession();
-			SeleniumMyBmw slmb = new SeleniumMyBmw();
+			SeleniumMyBmw2 slmb = new SeleniumMyBmw2();
 			List<LoginsExtend> logins =null;
+			/*
 			try{
 				logins = slmb.loginPerson(session);
 
@@ -123,24 +126,19 @@ public class SeleniumMyBmw {
 				}
 
 			}
+			*/
+			
 			List<Subtopics> subpages =new ArrayList<Subtopics>();
 			try{
 				 subpages = slmb.getSubTpics(session);
-				 
 			}catch(Exception e){
 				
 			}
-			for(Subtopics subtopic: subpages){
-				SubtopicsMapper subtopicsMapper = session.getMapper(SubtopicsMapper.class);
-				subtopic.setStatus(SubtopicsStatus.EV_3.enumVal);
-				subtopic.setSend(new Date());
-				subtopicsMapper.updSubtopicsByPrimaryKey(subtopic);
-				session.commit();
-			}
 			for (Subtopics subtopics : subpages) {
-				WebDriver driver=new ChromeDriver(server);;
+				WebDriver driver=null;
 				try{
 					Persons person = slmb.getSubLogins(session, subtopics);
+					 driver = checkProxy(new LoginsExtend());
 
 					slmb.loginOne(session, driver, person);
 					slmb.repeatOne(session,driver,subtopics);
@@ -208,7 +206,7 @@ public class SeleniumMyBmw {
 		// 随机找个代理
 		Random random = new Random();
 		try {
-			responseList =new ProxyUtils().getProxyList();
+			//responseList =new ProxyUtils().getProxyList();
 		} catch (Exception e) {
 			
 		}
@@ -326,11 +324,7 @@ public class SeleniumMyBmw {
 		}catch (Exception e) {
 			logger.error(" login error ",loginE.getPidName(),loginE.getPidPassword(),loginE.getPlan(),e);
 			LoginsMapper loginM = session.getMapper(LoginsMapper.class);
-			if(loginE.getStauts()=="1"){
-				loginE.setStauts(LoginsStauts.EV_3.enumVal);
-			}else{
-				loginE.setStauts(LoginsStauts.EV_4.enumVal);
-			}
+			loginE.setStauts(LoginsStauts.EV_3.enumVal);
 			loginE.setSend(new Date());
 			loginM.updLoginsByPrimaryKey(loginE);	
 			throw new RuntimeException(e);
@@ -397,11 +391,10 @@ public class SeleniumMyBmw {
 		TopicsMapper topicMapper = session.getMapper(TopicsMapper.class);
 
 		List<Map> result = topicMapper.getResultForSelectParam(
-				" id,name,readed,readedplan,liked,likedplan,collected,collectedplan,oldid,content from t_topics where readedplan>readed ORDER BY RAND()  limit 0,20");
-		if(result.size()< 15){
-			result.addAll( topicMapper.getResultForSelectParam(
-					" id,name,readed,readedplan,liked,likedplan,collected,collectedplan,oldid,content from t_topics  ORDER BY RAND() limit 0,20")			
-			);
+				" id,name,readed,readedplan,liked,likedplan,collected,collectedplan,oldid,content from t_topics where readedplan>readed limit 0,20");
+		if(result.size()<10){
+			result = topicMapper.getResultForSelectParam(
+					" id,name,readed,readedplan,liked,likedplan,collected,collectedplan,oldid,content from t_topics  ORDER BY RAND() limit 0,20");			
 		}
 		for (int i = 0; i < result.size(); i++) {
 			Map topics = result.get(i);

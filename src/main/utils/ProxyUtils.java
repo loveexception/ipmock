@@ -65,10 +65,10 @@ public class ProxyUtils {
     //http://dev.25-88.cn/api/?key=20170811185835377&getnum=30&filter=1&ipaddress=%u5317%u4EAC%2C%u5E7F%u4E1C%2C%u4E0A%u6D77&area=1&sarea=1&formats=2
 	public List<ProxyResponse> getProxyList() throws Exception {
 		StringBuffer sbParamer = new StringBuffer();
-		sbParamer.append("http://dec.ip3366.net/api/?").append("key=20170811185835377").append("&getnum=50")
-		.append("&anonymoustype=2")
+		sbParamer.append("http://dec.ip3366.net/api/?").append("key=20170811185835377").append("&getnum=100")
+		//.append("&anonymoustype=2")
 		.append("&filter=1")
-		.append("&ipaddress=%u4E0A%u6D77%2C%u5317%u4EAC%2C%u5E7F%u4E1C%2C%u676D%u5DDE.%u6DF1%u5733")
+		//.append("&ipaddress=%u4E0A%u6D77%2C%u5317%u4EAC%2C%u5E7F%u4E1C%2C%u676D%u5DDE.%u6DF1%u5733")
 		.append("&area=1").append("&formats=2");
 		Response response = null;
 
